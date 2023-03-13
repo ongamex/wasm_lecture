@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Simple template</title>
+	</head>
+	Example Library with bind !!!!
+	<body>
+	<script src="example_libBind.js"></script>
+	<script>
+    Module['onRuntimeInitialized'] = function() {
+        console.log('lerp result: ' + Module.lerp(1, 2, 0.5));
+
+		var colorInstance = new Module.Color(1, 0.5, 1);
+		Module.printColor(colorInstance);
+		
+		var instance = new Module.MyClass(10, "hello");
+		console.log(instance.x);
+		instance.incrementX();
+		instance.x; // 11
+		console.log(instance.x);
+		instance.x = 20; // 20
+		console.log(instance.x);
+		console.log(Module.MyClass.getStringFromInstance(instance)); // "hello"
+		instance.delete();
+    };
+	</script>
+	
+	
+	</body>
+</html>

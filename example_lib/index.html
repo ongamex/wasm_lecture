@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simple template</title>
+  </head>
+  <body>
+    <script>
+		importObject = {};
+		WebAssembly.instantiateStreaming(fetch("example_lib.wasm"), importObject).then(
+			(obj) => {
+				// Call an exported function:
+				alert(obj.instance.exports.sum(1, 2));
+
+				// or access the buffer contents of an exported memory:
+				const i32 = new Uint32Array(obj.instance.exports.memory.buffer);
+				alert(i32);
+
+				// or access the elements of an exported table:
+				const table = obj.instance.exports.table;
+				alert(table.get(0)());
+				console.log(table.get(0)());
+			}
+		);
+	</script>
+	Hello2
+  </body>
+</html>

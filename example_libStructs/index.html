@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simple struct function call</title>
+  </head>
+  <body>
+    <script>
+
+		const importObject = {
+			env: {
+				__memory_base: 0,
+				__table_base: 0,
+				memory: new WebAssembly.Memory({initial: 100})
+			}
+		};
+
+		function numberToFloat32Bytes(num) {
+			// In JavaScript this is an array of bytes.
+			// However unlike in C++, here we cannot just modify it - think of it as if it is a void*.
+			// We need to "cast" it to a typed array in order to manipulate it.
+			const rawMemory = new ArrayBuffer(4);
+			
+			// Create a view over buffer that is a float32 array. In our case with just one element.
+			const float32Arr = new Float32Array(rawMemory);
+			float32Arr[0] = num;
+
+			// Cast the memory to bytes, as this is how we are usually going to transfer data
+			// to and from C++ when we deal with something like structs.
+			const bytesArray = new Uint8Array(rawMemory);
+
+			return bytesArray;
+		}
+
+		fetch('example_libStructs.wasm').then(response =>
+			response.arrayBuffer()
+			).then(bytes =>
+			WebAssembly.instantiate(bytes, importObject)
+			).then((obj) => {
+
+				const memoryAsU8 = new Uint8Array(obj.instance.exports.memory.buffer);
+
+				{
+					const myValuesPtr = obj.instance.exports.stackAlloc(4 * 2);
+
+					memoryAsU8[0 + myValuesPtr] = 1;
+					memoryAsU8[1 + myValuesPtr] = 0;
+					memoryAsU8[2 + myValuesPtr] = 0;
+					memoryAsU8[3 + myValuesPtr] = 0;
+
+					memoryAsU8[4 + myValuesPtr] = 2;
+					memoryAsU8[5 + myValuesPtr] = 0;
+					memoryAsU8[6 + myValuesPtr] = 0;
+					memoryAsU8[7 + myValuesPtr] = 0;
+
+					// Do the summation:
+					const sumValue = obj.instance.exports.sum(myValuesPtr);
+
+					console.log("sum is " + sumValue + " and it should be 3");
+				}
+
+				{
+					const myValuesPtr = obj.instance.exports.stackAlloc(4 * 2);
+					
+					const bytes40f = numberToFloat32Bytes(40.1);
+					const bytes2f = numberToFloat32Bytes(2);
+
+					memoryAsU8[0 + myValuesPtr] = bytes40f[0];
+					memoryAsU8[1 + myValuesPtr] = bytes40f[1];
+					memoryAsU8[2 + myValuesPtr] = bytes40f[2];
+					memoryAsU8[3 + myValuesPtr] = bytes40f[3];
+
+					memoryAsU8[4 + myValuesPtr] = bytes2f[0];
+					memoryAsU8[5 + myValuesPtr] = bytes2f[1];
+					memoryAsU8[6 + myValuesPtr] = bytes2f[2];
+					memoryAsU8[7 + myValuesPtr] = bytes2f[3];
+
+					// Do the summation:
+					const sumValue = obj.instance.exports.sumFloats(myValuesPtr);
+
+					console.log("sumFloats is " + sumValue + " and it should be 42");
+				}
+			}
+		);
+	</script>
+	Simple struct function call
+  </body>
+</html>
