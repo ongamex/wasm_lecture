@@ -13,11 +13,13 @@ struct ValuesFloat {
 extern "C" {
 
 EMSCRIPTEN_KEEPALIVE int sum(Values v) {
-	return v.a + v.b;
+	int res = v.a + v.b;
+	return res;
 }
 
 EMSCRIPTEN_KEEPALIVE float sumFloats(ValuesFloat v) {
-	return v.a + v.b;
+	float result = v.a + v.b;
+	return result;
 }
 
 } // extern "C"
