@@ -7,14 +7,13 @@
 		let wasmModule = {}; ///< A value for the loaded WASM module.
 	</script>
 	<style>
-		body {
-			display: flex;
-  			justify-content: center;
+		.my-centered-elem {
+
 		}
 	</style>
   </head>
   <body>
-	<div>
+	<div class="my-centered-elem" style="border: 5px; border-color: black;">
 		Sum compute:<br/>
 		a = <input type="number" value="1" id="sum-input-a"/><br/>
 		b = <input type="number" value="2" id="sum-input-b"/><br/>
@@ -22,14 +21,76 @@
 		sumStructByValue = <span id="sum-result-value">Click Compute to find out the sum!</span><br/>
 		sumStructByRef   = <span id="sum-result-ref">Click Compute to find out the sum!</span><br/>
 		sumStructByPtr   = <span id="sum-result-ptr">Click Compute to find out the sum!</span><br/>
-		<button onclick="computeSum()">Compute</button><br/>
-		
+		<button onclick="computeSums()">Compute</button><br/>
 	</div>
-	<div id="log" style="background-color: black; color: white;"></div>
+	<div class="my-centered-elem">
+		Quadratic Equation Solver:<br/>
+		a = <input type="number" value="-1" id="qe-a"/><br/>
+		b = <input type="number" value="1"  id="qe-b"/><br/>
+		c = <input type="number" value="2"  id="qe-c"/><br/>
+
+		The solutions are: <span id="qe-solution">Click Compute to find out!</span><br/>
+
+		<button onclick="computeQuadraticEq()">Compute</button><br/>
+	</div>
+	<br/>
+
+	<div id="log" style="background-color: black; color: white;">
+	</div>
+
     <script>
 
 		//--------------------------------------------------------------------
+		// Actual WASM module loading.
+		//--------------------------------------------------------------------
+		const importObject = {
+			env: {
+				__memory_base: 0,
+				__table_base: 0,
+				memory: new WebAssembly.Memory({initial: 100})
+			}
+		};
+
+		fetch('example_libStructs.wasm')
+		.then(
+			response => 
+				response.arrayBuffer()
+				.then(bytes => WebAssembly.instantiate(bytes, importObject))
+				.then((wasmModuleLoaded) => {
+					wasmModule = wasmModuleLoaded;
+
+					document.getElementById("log").innerHTML += "WASM Module is loaded</br>";
+					console.log(wasmModule);
+
+					getHello();
+				})
+		);
+
+		//--------------------------------------------------------------------
 		//
+		//--------------------------------------------------------------------
+		function getHello() {
+			let helloStrPtr = wasmModule.instance.exports.getHelloString();
+			var textDec = new TextDecoder();
+
+			const memoryAsU8 = new Uint8Array(wasmModule.instance.exports.memory.buffer);
+
+			let decodedText = "";
+			for(let t = 0; true; ++t) {
+				let charCode = memoryAsU8[helloStrPtr + t];
+				if(charCode == 0) {
+					break;
+				}
+
+				decodedText += String.fromCharCode(charCode);
+			}
+
+			document.getElementById("log").innerHTML += decodedText + "<br/>";
+			memoryAsU8.slice(helloStrPtr);
+		}
+
+		//--------------------------------------------------------------------
+		// Function that compute a sum of two floats in different ways.
 		//--------------------------------------------------------------------
 		function computeSumSimple() {
 			const a = parseFloat(document.getElementById("sum-input-a").value);
@@ -122,7 +183,7 @@
 			document.getElementById("sum-result-ptr").innerHTML = "" + sum;
 		}
 
-		function computeSum() {
+		function computeSums() {
 			computeSumSimple();
 			computeSumValue();
 			computeSumRef();
@@ -147,64 +208,53 @@
 		}
 
 		//--------------------------------------------------------------------
-		// Actual WASM module loading.
+		// Slove the quadratic equation in WASM.
 		//--------------------------------------------------------------------
-		const importObject = {
-			env: {
-				__memory_base: 0,
-				__table_base: 0,
-				memory: new WebAssembly.Memory({initial: 100})
-			}
-		};
+		function computeQuadraticEq()
+		{
+			const a = parseFloat(document.getElementById("qe-a").value);
+			const b = parseFloat(document.getElementById("qe-b").value);
+			const c = parseFloat(document.getElementById("qe-c").value);
+			
+			// Allocate the memory that is going to store the result of the
+			// function that is a struct.
+			// The expected struct to be returned is this one:
+			//
+			//struct QuadraticEquationResult {
+			//	int numResults = 0; // 4 bytes wide i32, Byte offset - 0
+			//	float x1 = 0.f;     // 4 bytes wide f32, Byte offset - 4
+			//	float x2 = 0.f;     // 4 bytes wide f32, Byte offset - 8
+			//};                    // Total structure size is 12.
+			//
+			const quadResPtr = wasmModule.instance.exports.stackAlloc(4 * 3);
+			
+			let memory = wasmModule.instance.exports.memory.buffer;
 
-		fetch('example_libStructs.wasm').then(response =>
-			response.arrayBuffer()
-			).then(bytes =>
-			WebAssembly.instantiate(bytes, importObject)
-			).then((obj) => {
-				wasmModule = obj;
-				console.log(obj.instance.exports);
-				computeSum();
+			// Do the summation:
+			const solveQuadraticEqReturnedValue = 
+				wasmModule.instance.exports.solveQuadraticEq(quadResPtr, a, b, c);
+			
+			const quadResI32 = new Int32Array(memory.slice(quadResPtr, quadResPtr + 4));
+			const quadResF32 = new Float32Array(
+				memory.slice(
+					(quadResPtr + 4), // The byte offset in the global memory of x0.
+					(quadResPtr + 4) + (4 * 2) // The byte offset of the end of the memory for x1.
+				)
+			);
+			
+			const numResults = quadResI32[0];
+			const x1 = quadResF32[0];
+			const x2 = quadResF32[1];
 
-				document.getElementById("log").innerHTML += "WASM Module is loaded</br>";
-				console.log(wasmModule);
-				
-				const memory = obj.instance.exports.memory.buffer;
-				const memoryAsU8 = new Uint8Array(obj.instance.exports.memory.buffer);
-
-				{
-					//struct QuadraticEquationResult {
-					//	int numResults = 0; // 4 bytes wide i32, Byte offset - 0
-					//	float x1 = 0.f;     // 4 bytes wide f32, Byte offset - 4
-					//	float x2 = 0.f;     // 4 bytes wide f32, Byte offset - 8
-					//};                    // Total structure size is 12.
-					const quadResPtr = obj.instance.exports.stackAlloc(4 * 3);
-										
-					// Do the summation:
-					const solveQuadraticEqReturnedValue = 
-						obj.instance.exports.solveQuadraticEq(quadResPtr, -1, 1, 2);
-					
-					const quadResI32 = new Int32Array(memory.slice(quadResPtr, quadResPtr + 4));
-					const quadResF32 = new Float32Array(
-						memory.slice(
-							(quadResPtr + 4), // The byte offset in the global memory of x0.
-							(quadResPtr + 4) + (4 * 2) // The byte offset of the end of the memory for x1.
-						)
-					);
-					
-					const numResults = quadResI32[0];
-					const x1 = quadResF32[0];
-					const x2 = quadResF32[1];
-					console.log(quadResF32);
-					console.log("Solved a quadratic equation:");
-					console.log("Number of results: " + numResults);
-					console.log("x1 = " + x1);
-					console.log("x2 = " + x2);
-					console.log("the function returned: " + solveQuadraticEqReturnedValue);
-					
-				}
-			}
-		);
+			let eqSolutionElement = document.getElementById("qe-solution");
+			if(numResults == 0) {
+				eqSolutionElement.innerHTML = "There are no real solutions!";
+			} else if(numResults == 1) {
+				eqSolutionElement.innerHTML = "The only solution is: " + x1;
+			} else {
+				eqSolutionElement.innerHTML = "The solutions are: " + x1 + " and " + x2;
+			}		
+		}
 	</script>
   </body>
 </html>

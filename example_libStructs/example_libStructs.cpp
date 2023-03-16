@@ -13,7 +13,13 @@ struct QuadraticEquationResult {
 	float x2 = 0.f;
 };
 
+const char* g_helloString = "Hello from C++!";
+
 extern "C" {
+
+EMSCRIPTEN_KEEPALIVE const char* getHelloString() {
+	return g_helloString;
+}
 
 /// Computes the sum of @a and @b.
 /// This is an example of a very simple function that we could call
@@ -49,8 +55,12 @@ EMSCRIPTEN_KEEPALIVE float sumStructByPtr(SumInput* v) {
 	return result;
 }
 
-/// FInd the real results of a quadratic equation.
+/// Find the real results of a quadratic equation.
 /// The purpose is to deomstrate how to handle functions that return structs.
+///
+/// Note:
+/// Technically in C, we cannot "export" functions that return structs, but Emscripten allows it
+/// and it works normally as with MSVC.
 EMSCRIPTEN_KEEPALIVE QuadraticEquationResult solveQuadraticEq(float a, float b, float c) {	
 	const float d = b*b - 4*a*c;
 	
