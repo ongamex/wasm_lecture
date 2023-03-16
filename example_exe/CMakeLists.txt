@@ -1,2 +1,3 @@
-
 add_executable(example_exe example_exe.cpp)
+
+kostaki_addSourceMapForDebugging(example_exe)

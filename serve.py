@@ -16,7 +16,7 @@ class S(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.path[-1] == '/' :
-            runNinjaCmd = "ninja"
+            runNinjaCmd = "run_ninja_in_cmake_bin.bat"
             p = subprocess.Popen(runNinjaCmd, stdout=subprocess.PIPE, shell=True)
             (output, err) = p.communicate()  
             outputStr = str(output)

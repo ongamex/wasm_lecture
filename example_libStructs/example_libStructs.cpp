@@ -1,24 +1,78 @@
 #include <emscripten/emscripten.h>
 #include <cstdlib>
+#include <math.h>
 
-struct Values {
-	int a;
-	int b;
-};
-
-struct ValuesFloat {
+struct SumInput {
 	float a;
 	float b;
 };
+
+struct QuadraticEquationResult {
+	int numResults = 0;
+	float x1 = 0.f;
+	float x2 = 0.f;
+};
+
 extern "C" {
 
-EMSCRIPTEN_KEEPALIVE int sum(Values v) {
-	int res = v.a + v.b;
+/// Computes the sum of @a and @b.
+/// This is an example of a very simple function that we could call
+/// from JavaScript.
+EMSCRIPTEN_KEEPALIVE int sumSimpleArgs(float a, float b) {
+	float res = a + b;
 	return res;
 }
 
-EMSCRIPTEN_KEEPALIVE float sumFloats(ValuesFloat v) {
+/// Computes the sum of the givn arguments by @v.
+/// The purpouse is to show how to call a function that takes a struct as an input from JavaScript.
+/// To call this from JavaScript we need to pass a pointer to the mory that stores v.
+EMSCRIPTEN_KEEPALIVE float sumStructByValue(SumInput v) {
 	float result = v.a + v.b;
+	return result;
+}
+
+/// Computes the sum of the givn arguments by @v.
+/// The purpouse is to show how to call a function that takes a struct by reference as an input from JavaScript.
+/// Spoiler, it is actually the same as @sumStructByValue.
+/// To call this from JavaScript we need to pass a pointer to the mory that stores v.
+EMSCRIPTEN_KEEPALIVE float sumStructByRef(SumInput& v) {
+	float result = v.a + v.b;
+	return result;
+}
+
+/// Computes the sum of the givn arguments by @v.
+/// The purpouse is to show how to call a function that takes a struct by pointer as an input from JavaScript.
+/// Spoiler, it is actually the same as @sumStructByValue.
+/// To call this from JavaScript we need to pass a pointer to the mory that stores v.
+EMSCRIPTEN_KEEPALIVE float sumStructByPtr(SumInput* v) {
+	float result = v->a + v->b;
+	return result;
+}
+
+/// FInd the real results of a quadratic equation.
+/// The purpose is to deomstrate how to handle functions that return structs.
+EMSCRIPTEN_KEEPALIVE QuadraticEquationResult solveQuadraticEq(float a, float b, float c) {	
+	const float d = b*b - 4*a*c;
+	
+	if(d < 0.f) {
+		return QuadraticEquationResult();
+	}
+	
+	if(fabsf(d) < 1e-6f) {
+		QuadraticEquationResult result;
+		result.numResults = 1;
+		result.x1 = -b / 2 * a;
+		result.x2 = result.x1;
+		
+		return result;
+	}
+	
+	const float d_sqrt = sqrtf(d);
+	QuadraticEquationResult result;
+	result.numResults = 2;
+	result.x1 = (-b + d_sqrt) / 2 * a;
+	result.x2 = (-b - d_sqrt) / 2 * a;
+	
 	return result;
 }
 

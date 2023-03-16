@@ -2,18 +2,132 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Simple struct function call</title>
+    <title>Calling C++ from JS</title>
+	<script>
+		let wasmModule = {}; ///< A value for the loaded WASM module.
+	</script>
+	<style>
+		body {
+			display: flex;
+  			justify-content: center;
+		}
+	</style>
   </head>
   <body>
+	<div>
+		Sum compute:<br/>
+		a = <input type="number" value="1" id="sum-input-a"/><br/>
+		b = <input type="number" value="2" id="sum-input-b"/><br/>
+		sumSimpleArgs    = <span id="sum-result-simple">Click Compute to find out the sum!</span><br/>
+		sumStructByValue = <span id="sum-result-value">Click Compute to find out the sum!</span><br/>
+		sumStructByRef   = <span id="sum-result-ref">Click Compute to find out the sum!</span><br/>
+		sumStructByPtr   = <span id="sum-result-ptr">Click Compute to find out the sum!</span><br/>
+		<button onclick="computeSum()">Compute</button><br/>
+		
+	</div>
+	<div id="log" style="background-color: black; color: white;"></div>
     <script>
 
-		const importObject = {
-			env: {
-				__memory_base: 0,
-				__table_base: 0,
-				memory: new WebAssembly.Memory({initial: 100})
-			}
-		};
+		//--------------------------------------------------------------------
+		//
+		//--------------------------------------------------------------------
+		function computeSumSimple() {
+			const a = parseFloat(document.getElementById("sum-input-a").value);
+			const b = parseFloat(document.getElementById("sum-input-b").value);
+			
+			// Invoke our C++ that does the job:
+			const sum = wasmModule.instance.exports.sumSimpleArgs(a, b);
+
+			document.getElementById("sum-result-simple").innerHTML = "" + sum;
+		}
+
+		function computeSumValue() {
+			const myValuesPtr = wasmModule.instance.exports.stackAlloc(4 * 2);
+			
+			const a = parseFloat(document.getElementById("sum-input-a").value);
+			const b = parseFloat(document.getElementById("sum-input-b").value);
+	
+			const bytesA_f32 = numberToFloat32Bytes(a);
+			const bytesB_f32 = numberToFloat32Bytes(b);
+
+			const memoryAsU8 = new Uint8Array(wasmModule.instance.exports.memory.buffer);
+
+			memoryAsU8[0 + myValuesPtr] = bytesA_f32[0];
+			memoryAsU8[1 + myValuesPtr] = bytesA_f32[1];
+			memoryAsU8[2 + myValuesPtr] = bytesA_f32[2];
+			memoryAsU8[3 + myValuesPtr] = bytesA_f32[3];
+
+			memoryAsU8[4 + myValuesPtr] = bytesB_f32[0];
+			memoryAsU8[5 + myValuesPtr] = bytesB_f32[1];
+			memoryAsU8[6 + myValuesPtr] = bytesB_f32[2];
+			memoryAsU8[7 + myValuesPtr] = bytesB_f32[3];
+
+			// Invoke our C++ that does the job:
+			const sum = wasmModule.instance.exports.sumStructByValue(myValuesPtr);
+
+			document.getElementById("sum-result-value").innerHTML = "" + sum;
+		}
+
+		function computeSumRef() {
+			const myValuesPtr = wasmModule.instance.exports.stackAlloc(4 * 2);
+			
+			const a = parseFloat(document.getElementById("sum-input-a").value);
+			const b = parseFloat(document.getElementById("sum-input-b").value);
+	
+			const bytesA_f32 = numberToFloat32Bytes(a);
+			const bytesB_f32 = numberToFloat32Bytes(b);
+
+			const memoryAsU8 = new Uint8Array(wasmModule.instance.exports.memory.buffer);
+
+			memoryAsU8[0 + myValuesPtr] = bytesA_f32[0];
+			memoryAsU8[1 + myValuesPtr] = bytesA_f32[1];
+			memoryAsU8[2 + myValuesPtr] = bytesA_f32[2];
+			memoryAsU8[3 + myValuesPtr] = bytesA_f32[3];
+
+			memoryAsU8[4 + myValuesPtr] = bytesB_f32[0];
+			memoryAsU8[5 + myValuesPtr] = bytesB_f32[1];
+			memoryAsU8[6 + myValuesPtr] = bytesB_f32[2];
+			memoryAsU8[7 + myValuesPtr] = bytesB_f32[3];
+			
+			// Invoke our C++ that does the job:
+			const sum = wasmModule.instance.exports.sumStructByRef(myValuesPtr);
+
+			document.getElementById("sum-result-ref").innerHTML = "" + sum;
+		}
+
+		function computeSumPtr() {
+			const myValuesPtr = wasmModule.instance.exports.stackAlloc(4 * 2);
+			
+			const a = parseFloat(document.getElementById("sum-input-a").value);
+			const b = parseFloat(document.getElementById("sum-input-b").value);
+	
+			const bytesA_f32 = numberToFloat32Bytes(a);
+			const bytesB_f32 = numberToFloat32Bytes(b);
+
+			const memoryAsU8 = new Uint8Array(wasmModule.instance.exports.memory.buffer);
+
+			memoryAsU8[0 + myValuesPtr] = bytesA_f32[0];
+			memoryAsU8[1 + myValuesPtr] = bytesA_f32[1];
+			memoryAsU8[2 + myValuesPtr] = bytesA_f32[2];
+			memoryAsU8[3 + myValuesPtr] = bytesA_f32[3];
+
+			memoryAsU8[4 + myValuesPtr] = bytesB_f32[0];
+			memoryAsU8[5 + myValuesPtr] = bytesB_f32[1];
+			memoryAsU8[6 + myValuesPtr] = bytesB_f32[2];
+			memoryAsU8[7 + myValuesPtr] = bytesB_f32[3];
+
+			// Invoke our C++ that does the job:
+			const sum = wasmModule.instance.exports.sumStructByPtr(myValuesPtr);
+
+			document.getElementById("sum-result-ptr").innerHTML = "" + sum;
+		}
+
+		function computeSum() {
+			computeSumSimple();
+			computeSumValue();
+			computeSumRef();
+			computeSumPtr();
+		}
 
 		function numberToFloat32Bytes(num) {
 			// In JavaScript this is an array of bytes.
@@ -32,57 +146,65 @@
 			return bytesArray;
 		}
 
+		//--------------------------------------------------------------------
+		// Actual WASM module loading.
+		//--------------------------------------------------------------------
+		const importObject = {
+			env: {
+				__memory_base: 0,
+				__table_base: 0,
+				memory: new WebAssembly.Memory({initial: 100})
+			}
+		};
+
 		fetch('example_libStructs.wasm').then(response =>
 			response.arrayBuffer()
 			).then(bytes =>
 			WebAssembly.instantiate(bytes, importObject)
 			).then((obj) => {
+				wasmModule = obj;
+				console.log(obj.instance.exports);
+				computeSum();
 
+				document.getElementById("log").innerHTML += "WASM Module is loaded</br>";
+				console.log(wasmModule);
+				
+				const memory = obj.instance.exports.memory.buffer;
 				const memoryAsU8 = new Uint8Array(obj.instance.exports.memory.buffer);
 
 				{
-					const myValuesPtr = obj.instance.exports.stackAlloc(4 * 2);
-
-					memoryAsU8[0 + myValuesPtr] = 1;
-					memoryAsU8[1 + myValuesPtr] = 0;
-					memoryAsU8[2 + myValuesPtr] = 0;
-					memoryAsU8[3 + myValuesPtr] = 0;
-
-					memoryAsU8[4 + myValuesPtr] = 2;
-					memoryAsU8[5 + myValuesPtr] = 0;
-					memoryAsU8[6 + myValuesPtr] = 0;
-					memoryAsU8[7 + myValuesPtr] = 0;
-
+					//struct QuadraticEquationResult {
+					//	int numResults = 0; // 4 bytes wide i32, Byte offset - 0
+					//	float x1 = 0.f;     // 4 bytes wide f32, Byte offset - 4
+					//	float x2 = 0.f;     // 4 bytes wide f32, Byte offset - 8
+					//};                    // Total structure size is 12.
+					const quadResPtr = obj.instance.exports.stackAlloc(4 * 3);
+										
 					// Do the summation:
-					const sumValue = obj.instance.exports.sum(myValuesPtr);
-
-					console.log("sum is " + sumValue + " and it should be 3");
-				}
-
-				{
-					const myValuesPtr = obj.instance.exports.stackAlloc(4 * 2);
+					const solveQuadraticEqReturnedValue = 
+						obj.instance.exports.solveQuadraticEq(quadResPtr, -1, 1, 2);
 					
-					const bytes40f = numberToFloat32Bytes(40.1);
-					const bytes2f = numberToFloat32Bytes(2);
-
-					memoryAsU8[0 + myValuesPtr] = bytes40f[0];
-					memoryAsU8[1 + myValuesPtr] = bytes40f[1];
-					memoryAsU8[2 + myValuesPtr] = bytes40f[2];
-					memoryAsU8[3 + myValuesPtr] = bytes40f[3];
-
-					memoryAsU8[4 + myValuesPtr] = bytes2f[0];
-					memoryAsU8[5 + myValuesPtr] = bytes2f[1];
-					memoryAsU8[6 + myValuesPtr] = bytes2f[2];
-					memoryAsU8[7 + myValuesPtr] = bytes2f[3];
-
-					// Do the summation:
-					const sumValue = obj.instance.exports.sumFloats(myValuesPtr);
-
-					console.log("sumFloats is " + sumValue + " and it should be 42");
+					const quadResI32 = new Int32Array(memory.slice(quadResPtr, quadResPtr + 4));
+					const quadResF32 = new Float32Array(
+						memory.slice(
+							(quadResPtr + 4), // The byte offset in the global memory of x0.
+							(quadResPtr + 4) + (4 * 2) // The byte offset of the end of the memory for x1.
+						)
+					);
+					
+					const numResults = quadResI32[0];
+					const x1 = quadResF32[0];
+					const x2 = quadResF32[1];
+					console.log(quadResF32);
+					console.log("Solved a quadratic equation:");
+					console.log("Number of results: " + numResults);
+					console.log("x1 = " + x1);
+					console.log("x2 = " + x2);
+					console.log("the function returned: " + solveQuadraticEqReturnedValue);
+					
 				}
 			}
 		);
 	</script>
-	Simple struct function call
   </body>
 </html>
