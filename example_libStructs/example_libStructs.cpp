@@ -1,5 +1,4 @@
 #include <emscripten/emscripten.h>
-#include <cstdlib>
 #include <math.h>
 
 struct SumInput {

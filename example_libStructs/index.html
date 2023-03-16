@@ -39,7 +39,6 @@
 	</div>
 
     <script>
-
 		//--------------------------------------------------------------------
 		// Actual WASM module loading.
 		//--------------------------------------------------------------------
@@ -62,14 +61,15 @@
 					document.getElementById("log").innerHTML += "WASM Module is loaded</br>";
 					console.log(wasmModule);
 
-					getHello();
+					getHelloString();
 				})
 		);
 
 		//--------------------------------------------------------------------
-		//
+		// Call a function that returns a C string.
+		// Then we convert that C string to JavaScript string.
 		//--------------------------------------------------------------------
-		function getHello() {
+		function getHelloString() {
 			let helloStrPtr = wasmModule.instance.exports.getHelloString();
 			var textDec = new TextDecoder();
 
