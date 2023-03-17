@@ -8,13 +8,9 @@ macro(kostaki_addSourceMapForDebugging target_name)
 endmacro()
 
 if(EMSCRIPTEN)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s ALLOW_MEMORY_GROWTH=1") # By default Emscripten has a fixed pool size for dynamic allocations. This enables it to grow.
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g0") # Emscripten debug symbols take a lot of space for disable it by default. When debugging use -g3.
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3")
+	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s ALLOW_MEMORY_GROWTH=1") # By default Emscripten has a fixed pool size for dynamic allocations. This enables it to grow.
 endif()
 
-add_subdirectory(example_simple)
-add_subdirectory(example_exe)
-add_subdirectory(example_lib)
-add_subdirectory(example_libStructs)
-add_subdirectory(example_libBind)
+add_subdirectory(_01_example_cmd_types)
+add_subdirectory(_02_example_libStructs)
+add_subdirectory(_03_example_LibBind)
