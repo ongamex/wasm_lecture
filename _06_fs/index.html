@@ -37,8 +37,9 @@
                 if (dirContents.get(t).getIsDir()) {
                     let btnHtml = "<button onclick=\"enterDirectory('" + dirContents.get(t).getName() + "')\"> Enter </button>";
                     dirCotentsElem.innerHTML += "Directory: " + dirContents.get(t).getName() + btnHtml + "<br/>";
-                } else {
-                    dirCotentsElem.innerHTML += "File: " + dirContents.get(t).getName() + "<br/>";
+				} else {
+                    let btnHtml = "<button onclick=\"getFileContents('" + dirContents.get(t).getName() + "')\"> Read </button>";
+                    dirCotentsElem.innerHTML += "File: " + dirContents.get(t).getName() + btnHtml + "<br/>";
                 }
             }
         }
@@ -46,7 +47,17 @@
         function enterDirectory(dirName) {
             Module.enterDirectory(dirName);
 			refreshPaths();
+		}
+
+        function getFileContents(filename) {
+			fileCotents = Module.getFileContents(filename);
+
+			for (let t = 0; t < fileCotents.size(); ++t) {
+                document.getElementById('chaos-console').innerHTML += String.fromCharCode(fileCotents.get(t));
+			}
+            document.getElementById('chaos-console').innerHTML += "<br/>";
         }
+
 
 		Module['onRuntimeInitialized'] = function () {
 			refreshPaths();

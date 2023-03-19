@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <vector>
 #include <string>
+#include <fstream>
 
 struct FSEntry {
 	std::string name;
@@ -30,6 +31,13 @@ std::vector<FSEntry> getCurrDirContents() {
 	return result;
 }
 
+std::vector<char> getFileContents(std::string fileName) {
+	std::ifstream stream(fileName, std::ios::in | std::ios::binary);
+	std::vector<char> contents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+
+	return contents;
+}
+
 void enterDirectory(std::string newDir) {
 	namespace fs = std::filesystem;
 	fs::current_path(newDir);
@@ -44,6 +52,8 @@ EMSCRIPTEN_BINDINGS(a_random_name_here_that_doesnt_really_matter_at_all) {
 	;
 
 	emscripten::register_vector<FSEntry>("vectorFSEntry");
+	emscripten::register_vector<char>("vectorChar");
 	emscripten::function("getCurrDirContents", &getCurrDirContents);
 	emscripten::function("enterDirectory", &enterDirectory);
+	emscripten::function("getFileContents", &getFileContents);
 }
