@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Calling JavaScript from C++</title>
+	</head>
+	
+	<body>
+	Example, calling JS from C++.
+
+	<button onclick="cppHowManyTimesICalledThis()">C++ say something!</button><br/>
+	<button onclick="getLocalPtrTest()">Get Local Ptr Test!</button><br/>
+	<div id="chaos-console" style="background-color: black; color: white;">
+
+	</div>
+
+	<script src="./_04_call_js.js"></script>
+	<script>
+		function chaosPrintImpl(args) {
+			console.log(args);
+			document.getElementById('chaos-console').innerHTML += args;
+			document.getElementById('chaos-console').innerHTML += "<br/>";
+		}
+
+		function getLocalPtrTest() {
+			let ptr = Module.getLocalVariablePtr();
+			moduleMem = new Uint32Array(Module.asm.memory.buffer);
+			moduleMem[ptr / 4] += 10;
+		}
+
+		function cppHowManyTimesICalledThis() {
+			Module.cppHowManyTimesICalledThis();
+		}
+
+		Module['onRuntimeInitialized'] = function() {
+			Module.onModuleLoaded();
+		}
+	</script>
+	
+	</body>
+</html>

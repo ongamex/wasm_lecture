@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Calling JavaScript from C++</title>
+</head>
+
+<body>
+	Example File System:
+
+	<div id="chaos-console" style="background-color: black; color: white;">
+
+	</div>
+
+	<div id="currDirContents">
+
+	</div>
+
+	<script src="./_06_fs.js"></script>
+	<script>
+		function chaosPrintImpl(args) {
+			console.log(args);
+			document.getElementById('chaos-console').innerHTML += args;
+			document.getElementById('chaos-console').innerHTML += "<br/>";
+		}
+
+		function refreshPaths() {
+            let dirContents = Module.getCurrDirContents();
+            //console.log(Module.getCurrDirContents());
+            console.log("size is = " + dirContents.size());
+
+
+            dirCotentsElem = document.getElementById("currDirContents");
+            dirCotentsElem.innerHTML = "";
+
+            for (let t = 0; t < dirContents.size(); ++t) {
+                if (dirContents.get(t).getIsDir()) {
+                    let btnHtml = "<button onclick=\"enterDirectory('" + dirContents.get(t).getName() + "')\"> Enter </button>";
+                    dirCotentsElem.innerHTML += "Directory: " + dirContents.get(t).getName() + btnHtml + "<br/>";
+                } else {
+                    dirCotentsElem.innerHTML += "File: " + dirContents.get(t).getName() + "<br/>";
+                }
+            }
+        }
+
+        function enterDirectory(dirName) {
+            Module.enterDirectory(dirName);
+			refreshPaths();
+        }
+
+		Module['onRuntimeInitialized'] = function () {
+			refreshPaths();
+		}
+	</script>
+
+</body>
+</html>
