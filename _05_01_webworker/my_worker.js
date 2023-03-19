@@ -6,5 +6,9 @@ self.onmessage = function(message) {
         sum += 1;
     }
 
+    let i64ArrShared = new BigInt64Array(message.data);
+    Atomics.store(i64ArrShared, 0, BigInt(1));
+    Atomics.store(i64ArrShared, 1, BigInt(sum));
+
     self.postMessage(sum);
 }

@@ -33,6 +33,15 @@ class S(SimpleHTTPRequestHandler):
                 return
                 
         return super().do_GET()
+    
+    def end_headers(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Cross-Origin-Opener-Policy', 'same-origin')
+        self.send_header('Cross-Origin-Embedder-Policy', 'require-corp')
+        self.send_header('Cross-Origin-Resource-Policy', 'cross-origin')
+        self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        
+        return SimpleHTTPRequestHandler.end_headers(self)
 
     def do_POST(self):
         return super().do_POST()
