@@ -8,6 +8,8 @@ macro(chaos_addSourceMapForDebugging target_name)
 endmacro()
 
 if(EMSCRIPTEN)
+	# -O0 is need for the DWARF debugging to persever variables.
+	# Otherwise we won't see them in the browser.
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s ALLOW_MEMORY_GROWTH=1") # By default Emscripten has a fixed pool size for dynamic allocations. This enables it to grow.
@@ -20,3 +22,4 @@ add_subdirectory(_04_call_js)
 add_subdirectory(_05_01_webworker)
 add_subdirectory(_05_threads)
 add_subdirectory(_06_fs)
+add_subdirectory(_07_sdl)
