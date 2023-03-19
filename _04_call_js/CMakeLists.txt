@@ -1,6 +1,6 @@
 
 add_executable(_04_call_js call_js.cpp)
-kostaki_addSourceMapForDebugging(_04_call_js)
+chaos_addSourceMapForDebugging(_04_call_js)
 
 target_link_libraries(_04_call_js PRIVATE embind)
 

@@ -1,7 +1,7 @@
 
 add_executable(_03_example_libBind example_libBind.cpp)
 
-kostaki_addSourceMapForDebugging(_03_example_libBind)
+chaos_addSourceMapForDebugging(_03_example_libBind)
 
 #target_link_options(_03_example_libBind PRIVATE "-s EXPORT_NAME=\"'create_exampleLibBind\"'")
 #target_link_options(_03_example_libBind PRIVATE "-s MODULARIZE=1")
