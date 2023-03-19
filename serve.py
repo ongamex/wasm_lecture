@@ -9,6 +9,7 @@ Usage::
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import logging
 import subprocess
+import os
 
 class S(SimpleHTTPRequestHandler):
     def _set_response(self):
@@ -16,13 +17,14 @@ class S(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.path[-1] == '/' :
-            runNinjaCmd = "run_ninja_in_cmake_bin.bat"
+            runNinjaCmd = "ninja -C ./cmake_bin"
             p = subprocess.Popen(runNinjaCmd, stdout=subprocess.PIPE, shell=True)
             (output, err) = p.communicate()  
             outputStr = str(output)
             outputStr.replace('\0', '\n')
             outputStr.replace('\b', '\n')
             print("Ninja ran\nOutput: " + outputStr);
+            print(os.getcwd());
             
             if "error" in outputStr:
                 self.send_response(200)

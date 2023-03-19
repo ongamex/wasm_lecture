@@ -23,7 +23,7 @@ EMSCRIPTEN_KEEPALIVE const char* getHelloString() {
 /// Computes the sum of @a and @b.
 /// This is an example of a very simple function that we could call
 /// from JavaScript.
-EMSCRIPTEN_KEEPALIVE int sumSimpleArgs(float a, float b) {
+EMSCRIPTEN_KEEPALIVE float sumSimpleArgs(float a, float b) {
 	float res = a + b;
 	return res;
 }

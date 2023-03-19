@@ -1,5 +1,5 @@
 @echo off
-rem This script create cmake_bin directory inside the repo dir. 
+rem This script creates a cmake_bin directory inside the repo dir. 
 rem This is needed so that the HTTP servers can access the source files so that the Web Browser can access the C++ source files for debugging.
 rem We could use symlinks, but on Windows they require administrative rights, which is thedious to do.
 

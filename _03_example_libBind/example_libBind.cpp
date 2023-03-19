@@ -4,17 +4,17 @@
 using namespace emscripten;
 
 struct Color {  
-  Color() = default;
+	Color() = default;
 
-  Color(float x, float y, float z)
+	Color(float x, float y, float z)
 	: x(x)
 	, y(y)
 	, z(z)
-  {}
+	{}
 
-  float x = 0.f;
-  float y = 0.f;
-  float z = 0.f;
+	float x = 0.f;
+	float y = 0.f;
+	float z = 0.f;
 };
 
 void printColor(const Color& color) {
@@ -22,49 +22,49 @@ void printColor(const Color& color) {
 }
 
 float lerp(float a, float b, float t) {
-  return (1 - t) * a + t * b;
+	return (1 - t) * a + t * b;
 }
 
 class MyClass {
 public:
-  MyClass(int x, std::string y)
+	MyClass(int x, std::string y)
 	: x(x)
 	, y(y)
-  {}
+	{}
 
-  void incrementX() {
+	void incrementX() {
 	++x;
-  }
+	}
 
-  int getX() const { return x; }
-  void setX(int x_) { x = x_; }
+	int getX() const { return x; }
+	void setX(int x_) { x = x_; }
 
-  static std::string getStringFromInstance(const MyClass& instance) {
+	static std::string getStringFromInstance(const MyClass& instance) {
 	return instance.y;
-  }
+	}
 
 private:
-  int x;
-  std::string y;
+	int x;
+	std::string y;
 };
 
 // Binding code
 EMSCRIPTEN_BINDINGS(my_class_example) {
-  class_<MyClass>("MyClass")
+	class_<MyClass>("MyClass")
 	.constructor<int, std::string>()
 	.function("incrementX", &MyClass::incrementX)
 	.property("x", &MyClass::getX, &MyClass::setX)
 	.class_function("getStringFromInstance", &MyClass::getStringFromInstance)
-  ;
+	;
 }
 
 EMSCRIPTEN_BINDINGS(Color) {
-  class_<Color>("Color")
+	class_<Color>("Color")
 	.constructor()
 	.constructor<float, float, float>()
-  ;
+	;
 
-  function("printColor", &printColor);
+	function("printColor", &printColor);
 }
 
 EMSCRIPTEN_BINDINGS(my_module) {
