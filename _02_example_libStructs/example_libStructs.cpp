@@ -1,21 +1,9 @@
 #include <emscripten/emscripten.h>
 #include <math.h>
 
-struct SumInput {
-	float a;
-	float b;
-};
-
-struct QuadraticEquationResult {
-	int numResults = 0;
-	float x1 = 0.f;
-	float x2 = 0.f;
-};
-
-const char* g_helloString = "Hello from C++!";
-
 extern "C" {
 
+const char* g_helloString = "Hello from C++!";
 EMSCRIPTEN_KEEPALIVE const char* getHelloString() {
 	return g_helloString;
 }
@@ -31,6 +19,12 @@ EMSCRIPTEN_KEEPALIVE float sumSimpleArgs(float a, float b) {
 /// Computes the sum of the givn arguments by @v.
 /// The purpouse is to show how to call a function that takes a struct as an input from JavaScript.
 /// To call this from JavaScript we need to pass a pointer to the mory that stores v.
+
+struct SumInput {
+	float a;
+	float b;
+};
+
 EMSCRIPTEN_KEEPALIVE float sumStructByValue(SumInput v) {
 	float result = v.a + v.b;
 	return result;
@@ -60,6 +54,13 @@ EMSCRIPTEN_KEEPALIVE float sumStructByPtr(SumInput* v) {
 /// Note:
 /// Technically in C, we cannot "export" functions that return structs, but Emscripten allows it
 /// and it works normally as with MSVC.
+
+struct QuadraticEquationResult {
+	int numResults = 0;
+	float x1 = 0.f;
+	float x2 = 0.f;
+};
+
 EMSCRIPTEN_KEEPALIVE QuadraticEquationResult solveQuadraticEq(float a, float b, float c) {	
 	const float d = b*b - 4*a*c;
 	

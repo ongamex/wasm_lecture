@@ -71,7 +71,6 @@
 		//--------------------------------------------------------------------
 		function getHelloString() {
 			let helloStrPtr = wasmModule.instance.exports.getHelloString();
-			var textDec = new TextDecoder();
 
 			const memoryAsU8 = new Uint8Array(wasmModule.instance.exports.memory.buffer);
 
